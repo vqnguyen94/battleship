@@ -310,7 +310,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGameboard) {
   var ships = [5, 4, 3, 3, 2];
-  var cpuShips = [1];
+  var cpuShips = [5, 4, 3, 3, 2];
   var orientation = "Horizontal";
 
   var setupGame = function setupGame() {
@@ -463,7 +463,7 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
 
   function enableBoard() {
     document.getElementById(cpu.getName()).classList.remove("disable");
-  } //testing, delete later
+  } //for debugging
 
 
   var highlightCpuPlacedShips = function highlightCpuPlacedShips() {
@@ -523,8 +523,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     highlightPlacedShips();
 
     if (ships.length === 0) {
-      placeCpuShips();
-      highlightCpuPlacedShips();
+      placeCpuShips(); // highlightCpuPlacedShips();
+
       afterShipsPlaced();
     } else {
       updateShipPlacementStatus();

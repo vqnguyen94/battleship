@@ -2,7 +2,7 @@ import { newGame } from "./index";
 
 const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
   const ships = [5, 4, 3, 3, 2];
-  const cpuShips = [1];
+  const cpuShips = [5, 4, 3, 3, 2];
   let orientation = "Horizontal";
 
   const setupGame = () => {
@@ -161,7 +161,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     document.getElementById(cpu.getName()).classList.remove("disable");
   }
 
-  //testing, delete later
+  //for debugging
   const highlightCpuPlacedShips = () => {
     const cpuBoard = document.getElementById("Computer");
     const shipCoordinates = cpuGameboard.getGameboard();
@@ -230,7 +230,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     highlightPlacedShips();
     if (ships.length === 0) {
       placeCpuShips();
-      highlightCpuPlacedShips();
+      // highlightCpuPlacedShips();
       afterShipsPlaced();
     } else {
       updateShipPlacementStatus();
