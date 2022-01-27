@@ -1,6 +1,6 @@
-#Battleship game
+# Battleship game
 
-##[Live page](https://vqnguyen94.github.io/battleship/)
+## [Live page](https://vqnguyen94.github.io/battleship/)
 
 Possible future implementations:
 
