@@ -1,4 +1,3 @@
-// npm test -- gameboard.test.js
 //Object where keys are coordinates and values are the ship
 import Ship from "./ship";
 

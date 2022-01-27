@@ -1,8 +1,3 @@
-//could make button section just display the end of game message,
-//now just styling stuff
-
-//npx webpack --watch
-
 import Gameboard from "./gameboard";
 import Player from "./player";
 import UserInterface from "./dom";

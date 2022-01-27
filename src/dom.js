@@ -16,25 +16,30 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return content;
   };
 
+  //Updates message with results of a player's attack
   const updateMessage = (name, result) => {
     const statusBar = document.getElementById(`${name}Status`);
     let message = result === true ? (message = "Hit!") : (message = "Miss!");
     statusBar.textContent = message;
+    //Animation for displaying results
     statusBar.classList.remove("next-turn");
     void statusBar.offsetWidth; //no idea what this line actually does, but it helps with restarting the animation
     statusBar.classList.add("next-turn");
   };
 
+  //Updates amount of active ships
   const updateShipStatus = (name, activeShips) => {
     const shipStatus = document.getElementById(`${name}Ships`);
     shipStatus.textContent = `Active ships: ${activeShips} / 5`;
   };
 
+  //Displays to the player how many ships they have left to place
   const updateShipPlacementStatus = () => {
     const shipStatus = document.getElementById("playerShips");
     shipStatus.textContent = `Ships placed: ${5 - ships.length} / 5`;
   };
 
+  //Basic gameboard used by both players
   const makeGameboard = (name) => {
     const gameboard = document.createElement("div");
     gameboard.setAttribute("class", "gameboard");
@@ -60,6 +65,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return playerSection;
   };
 
+  //Player gameboard includes placing ships functionality
   const makePlayerGameboard = () => {
     const gameboard = makeGameboard(player.getName());
 
@@ -82,6 +88,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return cpuSection;
   };
 
+  //CPU gameboard involves turn progression/attack functionality
   const makeCpuGameboard = () => {
     const gameboard = makeGameboard(cpu.getName());
     for (let i = 0; i < gameboard.children.length; i++) {
@@ -92,10 +99,12 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return gameboard;
   };
 
+  //Randomly place ships for CPU
   const placeCpuShips = () => {
     let x, y, shipLength;
     let coordinates = [];
     let randOrientation;
+    //While there are still ships in cpuShips array
     while (cpuShips.length != 0) {
       x = Math.floor(Math.random() * 10);
       y = Math.floor(Math.random() * 10);
@@ -105,7 +114,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
         [x, y],
         randOrientation
       );
-      //if doesnt overlap or go out of bounds for previously placed cpu ships, place and higlight the ship
+      //If coords don't overlap or go out of bounds for previously placed cpu ships, place and higlight the ship
       if (
         !cpuGameboard.determineShipOverlap(coordinates) &&
         cpuGameboard.determineOutOfBounds(coordinates)
@@ -116,13 +125,15 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     }
   };
 
-  //try to use async await to make the board unclickable while the cpu is placing boards
+  //Activates when the player presses a square on the CPU board
   const doTurn = (event) => {
+    //Disable board to prevent player from clicking immediately after
     document.getElementById(cpu.getName()).classList.add("disable");
+
     let attackPosition, attackResult, numOfActiveShips;
     [attackPosition, attackResult] = player.attack(
       cpuGameboard,
-      event.target.textContent
+      event.target.textContent //coordinates of the clicked square
     );
     highlightAttack(cpu.getName(), attackPosition, attackResult);
     updateMessage("cpu", attackResult);
@@ -144,6 +155,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     setTimeout(enableBoard, 800);
   };
 
+  //Similar to player attack except with added delay for effect
   const cpuAttack = () => {
     let attackPosition, attackResult;
     [attackPosition, attackResult] = cpu.randomAttack(playerGameboard);
@@ -161,7 +173,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     document.getElementById(cpu.getName()).classList.remove("disable");
   }
 
-  //for debugging
+  //For debugging
   const highlightCpuPlacedShips = () => {
     const cpuBoard = document.getElementById("Computer");
     const shipCoordinates = cpuGameboard.getGameboard();
@@ -184,23 +196,26 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return [x, y];
   };
 
+  //Used when player is still placing ships
   const validShipPositionCheck = (event) => {
     let startPosition = convertStringToArray(event.target.textContent);
 
-    //hypotehthical coordinates of the ship to be placed
+    //Hypothethical coordinates of the ship to be placed
     const coordinates = playerGameboard.determineShipCoordinates(
       ships[0],
       startPosition,
       orientation
     );
 
-    //use coordinates to determine if they overlap with any ships or out of bounds
+    //Use coordinates to determine if they overlap with any ships or out of bounds
     if (
       !playerGameboard.determineShipOverlap(coordinates) &&
       playerGameboard.determineOutOfBounds(coordinates)
     ) {
+      //Activate hover effect if valid
       highlightValidShipPlacement(coordinates);
     } else {
+      //Cursor blocked effect for invalid spots
       event.target.classList.add("invalid");
     }
   };
@@ -208,9 +223,10 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
   const highlightValidShipPlacement = (coordinates) => {
     const boardSquare = document.getElementById(player.getName()).children;
 
+    //Go through coordinates and when that coordinate is encountered on the board, highlight it
     for (let i = 0; i < coordinates.length; i++) {
       for (let j = 0; j < boardSquare.length; j++) {
-        //highlight the squares that were checked as valid
+        //Highlight the squares that were checked as valid
         if (boardSquare[j].textContent === String(coordinates[i])) {
           boardSquare[j].classList.add("ship-hover");
           boardSquare[j].addEventListener("click", placeShip);
@@ -220,24 +236,25 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     }
   };
 
-  //search thru all the currently highlighted valid hover spots, add to coordinates, send coordinates to gameboard
-  //if you're able to place ship its assumed that the spot is already valid
+  //Attached to squares that are valid for ship placement
   const placeShip = (event) => {
     const shipLength = ships.shift();
     let startPosition = convertStringToArray(event.target.textContent);
 
     playerGameboard.placeShip(shipLength, startPosition, orientation);
     highlightPlacedShips();
+    //No more ships left to place
     if (ships.length === 0) {
       placeCpuShips();
       // highlightCpuPlacedShips();
       afterShipsPlaced();
     } else {
+      //Update number of ships to be placed if there are any left
       updateShipPlacementStatus();
     }
   };
 
-  //reset cells effects
+  //Reset cells effects for any squares that were previously hovered or deemed invalid
   const resetUnusedCells = () => {
     const board = document.getElementById(player.getName());
     for (let i = 0; i < board.children.length; i++) {
@@ -271,7 +288,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     }
   };
 
-  //should only be used by olayer since cpu's ships arent shown
+  //Goes through the player gameboard's coordinates and highlights those coordinates on the board
   const highlightPlacedShips = () => {
     const playerBoard = document.getElementById(player.getName());
     const shipCoordinates = playerGameboard.getGameboard();
@@ -290,6 +307,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     }
   };
 
+  //Effect that highlights player's most recent attack
   const resetRecentAttack = (name) => {
     const board = document.getElementById(name);
     for (let i = 0; i < board.children.length; i++) {
@@ -300,6 +318,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     }
   };
 
+  //Highlights the results of most recent attack
   const highlightAttack = (name, coordinate, result) => {
     const board = document.getElementById(name);
     resetRecentAttack(name);
@@ -324,10 +343,12 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
   const winnerAnimation = (winner) => {
     const statusBar = document.getElementById(`${winner}Status`);
     if (winner === "player") {
-      document.getElementById("cpuStatus").textContent = "";
+      document.getElementById(
+        "cpuStatus"
+      ).textContent = `"You sunk my battleship! 😭"`;
       document.getElementById("cpuShips").textContent = "All ships sunk!";
     } else {
-      document.getElementById("playerStatus").textContent = "All ships sunk!";
+      document.getElementById("playerShips").textContent = "All ships sunk!";
     }
     statusBar.textContent = "👑 Winner! 👑";
     statusBar.classList.add("winner");
@@ -340,6 +361,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     button.textContent = "Play again";
   };
 
+  //Reset and rotate buttons
   const makeButtons = () => {
     const buttons = document.createElement("div");
     const playAgain = document.createElement("button");
@@ -351,7 +373,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
 
     const orientationBtn = document.createElement("button");
     orientationBtn.setAttribute("id", "orientation");
-    orientationBtn.textContent = "Rotate ship";
+    orientationBtn.textContent = "Rotate ship: ↔️ ";
     orientationBtn.addEventListener("click", changeOrientation);
 
     buttons.appendChild(orientationBtn);
@@ -360,12 +382,18 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     return buttons;
   };
 
+  //Functionality for rotate ship button
   const changeOrientation = () => {
+    const button = document.getElementById("orientation");
     orientation === "Horizontal"
       ? (orientation = "Vertical")
       : (orientation = "Horizontal");
+    orientation === "Horizontal"
+      ? (button.textContent = "Rotate ship: ↔️")
+      : (button.textContent = "Rotate ship: ↕️");
   };
 
+  //Used when placing random ships for CPU
   const randomOrientation = () => {
     return Math.floor(Math.random() * 2) === 0 ? "Horizontal" : "Vertical";
   };
@@ -376,7 +404,7 @@ const UserInterface = (player, cpu, playerGameboard, cpuGameboard) => {
     statusBar.classList.add("status-bar");
 
     if (name === "player") {
-      statusBar.textContent = "Click a square on your board to place a ship:";
+      statusBar.textContent = "Click a square on your board to place a ship.";
     }
 
     return statusBar;

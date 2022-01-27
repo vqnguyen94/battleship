@@ -12,9 +12,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _player__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony import */ var _dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
 /* harmony import */ var _styles_css__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5);
-//could make button section just display the end of game message,
-//now just styling stuff
-//npx webpack --watch
 
 
 
@@ -71,7 +68,6 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-// npm test -- gameboard.test.js
 //Object where keys are coordinates and values are the ship
 
 
@@ -320,27 +316,32 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     content.appendChild(makeButtons());
     content.appendChild(cpuSetup());
     return content;
-  };
+  }; //Updates message with results of a player's attack
+
 
   var updateMessage = function updateMessage(name, result) {
     var statusBar = document.getElementById("".concat(name, "Status"));
     var message = result === true ? message = "Hit!" : message = "Miss!";
-    statusBar.textContent = message;
+    statusBar.textContent = message; //Animation for displaying results
+
     statusBar.classList.remove("next-turn");
     void statusBar.offsetWidth; //no idea what this line actually does, but it helps with restarting the animation
 
     statusBar.classList.add("next-turn");
-  };
+  }; //Updates amount of active ships
+
 
   var updateShipStatus = function updateShipStatus(name, activeShips) {
     var shipStatus = document.getElementById("".concat(name, "Ships"));
     shipStatus.textContent = "Active ships: ".concat(activeShips, " / 5");
-  };
+  }; //Displays to the player how many ships they have left to place
+
 
   var updateShipPlacementStatus = function updateShipPlacementStatus() {
     var shipStatus = document.getElementById("playerShips");
     shipStatus.textContent = "Ships placed: ".concat(5 - ships.length, " / 5");
-  };
+  }; //Basic gameboard used by both players
+
 
   var makeGameboard = function makeGameboard(name) {
     var gameboard = document.createElement("div");
@@ -365,7 +366,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     playerSection.appendChild(makePlayerGameboard());
     playerSection.appendChild(makeShipStatus("player"));
     return playerSection;
-  };
+  }; //Player gameboard includes placing ships functionality
+
 
   var makePlayerGameboard = function makePlayerGameboard() {
     var gameboard = makeGameboard(player.getName());
@@ -384,7 +386,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     cpuSection.appendChild(makeCpuGameboard());
     cpuSection.appendChild(makeShipStatus("cpu"));
     return cpuSection;
-  };
+  }; //CPU gameboard involves turn progression/attack functionality
+
 
   var makeCpuGameboard = function makeCpuGameboard() {
     var gameboard = makeGameboard(cpu.getName());
@@ -395,32 +398,35 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
 
     gameboard.classList.toggle("disable");
     return gameboard;
-  };
+  }; //Randomly place ships for CPU
+
 
   var placeCpuShips = function placeCpuShips() {
     var x, y, shipLength;
     var coordinates = [];
-    var randOrientation;
+    var randOrientation; //While there are still ships in cpuShips array
 
     while (cpuShips.length != 0) {
       x = Math.floor(Math.random() * 10);
       y = Math.floor(Math.random() * 10);
       randOrientation = randomOrientation();
-      coordinates = cpuGameboard.determineShipCoordinates(cpuShips[0], [x, y], randOrientation); //if doesnt overlap or go out of bounds for previously placed cpu ships, place and higlight the ship
+      coordinates = cpuGameboard.determineShipCoordinates(cpuShips[0], [x, y], randOrientation); //If coords don't overlap or go out of bounds for previously placed cpu ships, place and higlight the ship
 
       if (!cpuGameboard.determineShipOverlap(coordinates) && cpuGameboard.determineOutOfBounds(coordinates)) {
         shipLength = cpuShips.shift();
         cpuGameboard.placeShip(shipLength, [x, y], randOrientation);
       }
     }
-  }; //try to use async await to make the board unclickable while the cpu is placing boards
+  }; //Activates when the player presses a square on the CPU board
 
 
   var doTurn = function doTurn(event) {
+    //Disable board to prevent player from clicking immediately after
     document.getElementById(cpu.getName()).classList.add("disable");
     var attackPosition, attackResult, numOfActiveShips;
 
-    var _player$attack = player.attack(cpuGameboard, event.target.textContent);
+    var _player$attack = player.attack(cpuGameboard, event.target.textContent //coordinates of the clicked square
+    );
 
     var _player$attack2 = _slicedToArray(_player$attack, 2);
 
@@ -446,7 +452,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     }
 
     setTimeout(enableBoard, 800);
-  };
+  }; //Similar to player attack except with added delay for effect
+
 
   var cpuAttack = function cpuAttack() {
     var attackPosition, attackResult;
@@ -463,7 +470,7 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
 
   function enableBoard() {
     document.getElementById(cpu.getName()).classList.remove("disable");
-  } //for debugging
+  } //For debugging
 
 
   var highlightCpuPlacedShips = function highlightCpuPlacedShips() {
@@ -485,26 +492,29 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     var x = parseInt(coordinate[0]);
     var y = parseInt(coordinate[1]);
     return [x, y];
-  };
+  }; //Used when player is still placing ships
+
 
   var validShipPositionCheck = function validShipPositionCheck(event) {
-    var startPosition = convertStringToArray(event.target.textContent); //hypotehthical coordinates of the ship to be placed
+    var startPosition = convertStringToArray(event.target.textContent); //Hypothethical coordinates of the ship to be placed
 
-    var coordinates = playerGameboard.determineShipCoordinates(ships[0], startPosition, orientation); //use coordinates to determine if they overlap with any ships or out of bounds
+    var coordinates = playerGameboard.determineShipCoordinates(ships[0], startPosition, orientation); //Use coordinates to determine if they overlap with any ships or out of bounds
 
     if (!playerGameboard.determineShipOverlap(coordinates) && playerGameboard.determineOutOfBounds(coordinates)) {
+      //Activate hover effect if valid
       highlightValidShipPlacement(coordinates);
     } else {
+      //Cursor blocked effect for invalid spots
       event.target.classList.add("invalid");
     }
   };
 
   var highlightValidShipPlacement = function highlightValidShipPlacement(coordinates) {
-    var boardSquare = document.getElementById(player.getName()).children;
+    var boardSquare = document.getElementById(player.getName()).children; //Go through coordinates and when that coordinate is encountered on the board, highlight it
 
     for (var i = 0; i < coordinates.length; i++) {
       for (var j = 0; j < boardSquare.length; j++) {
-        //highlight the squares that were checked as valid
+        //Highlight the squares that were checked as valid
         if (boardSquare[j].textContent === String(coordinates[i])) {
           boardSquare[j].classList.add("ship-hover");
           boardSquare[j].addEventListener("click", placeShip);
@@ -512,24 +522,24 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
         }
       }
     }
-  }; //search thru all the currently highlighted valid hover spots, add to coordinates, send coordinates to gameboard
-  //if you're able to place ship its assumed that the spot is already valid
+  }; //Attached to squares that are valid for ship placement
 
 
   var placeShip = function placeShip(event) {
     var shipLength = ships.shift();
     var startPosition = convertStringToArray(event.target.textContent);
     playerGameboard.placeShip(shipLength, startPosition, orientation);
-    highlightPlacedShips();
+    highlightPlacedShips(); //No more ships left to place
 
     if (ships.length === 0) {
       placeCpuShips(); // highlightCpuPlacedShips();
 
       afterShipsPlaced();
     } else {
+      //Update number of ships to be placed if there are any left
       updateShipPlacementStatus();
     }
-  }; //reset cells effects
+  }; //Reset cells effects for any squares that were previously hovered or deemed invalid
 
 
   var resetUnusedCells = function resetUnusedCells() {
@@ -561,7 +571,7 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     for (var i = 0; i < cpuBoard.children.length; i++) {
       cpuBoard.children[i].classList.add("attack");
     }
-  }; //should only be used by olayer since cpu's ships arent shown
+  }; //Goes through the player gameboard's coordinates and highlights those coordinates on the board
 
 
   var highlightPlacedShips = function highlightPlacedShips() {
@@ -577,7 +587,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
         }
       }
     }
-  };
+  }; //Effect that highlights player's most recent attack
+
 
   var resetRecentAttack = function resetRecentAttack(name) {
     var board = document.getElementById(name);
@@ -588,7 +599,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
         break;
       }
     }
-  };
+  }; //Highlights the results of most recent attack
+
 
   var highlightAttack = function highlightAttack(name, coordinate, result) {
     var board = document.getElementById(name);
@@ -614,10 +626,10 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     var statusBar = document.getElementById("".concat(winner, "Status"));
 
     if (winner === "player") {
-      document.getElementById("cpuStatus").textContent = "";
+      document.getElementById("cpuStatus").textContent = "\"You sunk my battleship! \uD83D\uDE2D\"";
       document.getElementById("cpuShips").textContent = "All ships sunk!";
     } else {
-      document.getElementById("playerStatus").textContent = "All ships sunk!";
+      document.getElementById("playerShips").textContent = "All ships sunk!";
     }
 
     statusBar.textContent = "👑 Winner! 👑";
@@ -629,7 +641,8 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     winnerAnimation(winner);
     var button = document.getElementById("reset");
     button.textContent = "Play again";
-  };
+  }; //Reset and rotate buttons
+
 
   var makeButtons = function makeButtons() {
     var buttons = document.createElement("div");
@@ -640,16 +653,20 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     playAgain.textContent = "Reset";
     var orientationBtn = document.createElement("button");
     orientationBtn.setAttribute("id", "orientation");
-    orientationBtn.textContent = "Rotate ship";
+    orientationBtn.textContent = "Rotate ship: ↔️ ";
     orientationBtn.addEventListener("click", changeOrientation);
     buttons.appendChild(orientationBtn);
     buttons.appendChild(playAgain);
     return buttons;
-  };
+  }; //Functionality for rotate ship button
+
 
   var changeOrientation = function changeOrientation() {
+    var button = document.getElementById("orientation");
     orientation === "Horizontal" ? orientation = "Vertical" : orientation = "Horizontal";
-  };
+    orientation === "Horizontal" ? button.textContent = "Rotate ship: ↔️" : button.textContent = "Rotate ship: ↕️";
+  }; //Used when placing random ships for CPU
+
 
   var randomOrientation = function randomOrientation() {
     return Math.floor(Math.random() * 2) === 0 ? "Horizontal" : "Vertical";
@@ -661,7 +678,7 @@ var UserInterface = function UserInterface(player, cpu, playerGameboard, cpuGame
     statusBar.classList.add("status-bar");
 
     if (name === "player") {
-      statusBar.textContent = "Click a square on your board to place a ship:";
+      statusBar.textContent = "Click a square on your board to place a ship.";
     }
 
     return statusBar;
@@ -1044,7 +1061,7 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_noSourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 ___CSS_LOADER_EXPORT___.push([module.id, "@import url(https://fonts.googleapis.com/css2?family=Lato&family=Orbitron:wght@700&display=swap);"]);
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "html {\n  background: rgb(233, 233, 233);\n  font-family: \"Lato\", sans-serif;\n}\n\n#container {\n  display: flex;\n  flex-direction: column;\n  height: 100vh;\n}\n\n#title {\n  height: 15vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 5em;\n  font-family: \"Orbitron\", sans-serif;\n}\n\n#content {\n  display: flex;\n  justify-content: space-around;\n}\n\n.status-bar {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 10vh;\n  font-size: 1.5em;\n}\n\n.buttons {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n\n.gameboard {\n  background: white;\n  display: grid;\n  height: 500px;\n  width: 500px;\n  grid-template-rows: repeat(10, 10%);\n  grid-template-columns: repeat(10, 10%);\n  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n  border: solid 0.3em black;\n}\n\n.active-ship {\n  background: gray;\n}\n\n.hit {\n  background: red;\n}\n\n.miss {\n  background: lightblue;\n}\n\n.ship-hover {\n  background: lightgray;\n  transform: scale(0.9, 0.9);\n}\n\n.board-square {\n  border: 1px solid black;\n  font-size: 0;\n  transition: transform 0.1s, background 0.5s, border 0.1s;\n}\n\n.board-square:hover {\n  transform: scale(0.9, 0.9);\n}\n\n.disable {\n  pointer-events: none;\n}\n\n.invalid {\n  cursor: not-allowed;\n}\n\n.attack:hover {\n  border: 3px solid yellow;\n}\n\n.recent-attack {\n  border: 3px solid yellow;\n}\n\n.hidden {\n  visibility: hidden;\n}\n\n.next-turn {\n  animation-name: pop;\n  animation-duration: 800ms;\n}\n\n.winner {\n  animation-name: pulse;\n  animation-duration: 1400ms;\n  animation-iteration-count: infinite;\n}\n\n.ship-status {\n  height: 10vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 1.5em;\n}\n\n@keyframes pop {\n  0% {\n    opacity: 0;\n    transform: scale(1, 1);\n  }\n\n  50% {\n    opacity: 100%;\n    transform: scale(2.5, 2.5);\n  }\n\n  100% {\n    /* opacity: 100%; */\n    transform: scale(1, 1);\n  }\n}\n\n@keyframes pulse {\n  0% {\n    transform: scale(1, 1);\n  }\n\n  50% {\n    opacity: 100%;\n    transform: scale(2, 2);\n  }\n\n  100% {\n    transform: scale(1, 1);\n  }\n}\n\nbutton {\n  text-align: center;\n  text-decoration: none;\n  background: white;\n  border: solid 1px black;\n  font-size: 1.2em;\n  padding: 0.4em;\n  border-radius: 0.2em;\n  margin: 1em;\n}\n\nbutton:hover {\n  background: lightgray;\n}\n\nbutton:active {\n  background: gray;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, "html {\n  background: rgb(233, 233, 233);\n  font-family: \"Lato\", sans-serif;\n}\n\n/* Main container */\n#container {\n  display: flex;\n  flex-direction: column;\n  height: 100vh;\n}\n\n#title {\n  height: 15vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 5em;\n  font-family: \"Orbitron\", sans-serif;\n}\n\n/* Container for gameboards status bars and ship status */\n#content {\n  display: flex;\n  justify-content: space-around;\n}\n\n.status-bar {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  height: 10vh;\n  font-size: 1.5em;\n}\n\n.buttons {\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n}\n\n.gameboard {\n  background: white;\n  display: grid;\n  height: 500px;\n  width: 500px;\n  grid-template-rows: repeat(10, 10%);\n  grid-template-columns: repeat(10, 10%);\n  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);\n  border: solid 0.3em black;\n}\n\n.active-ship {\n  background: gray;\n}\n\n.hit {\n  background: red;\n}\n\n.miss {\n  background: lightblue;\n}\n\n.ship-hover {\n  background: lightgray;\n  transform: scale(0.9, 0.9);\n}\n\n.board-square {\n  border: 1px solid black;\n  font-size: 0;\n  transition: transform 0.1s, background 0.5s, border 0.1s;\n}\n\n.board-square:hover {\n  transform: scale(0.9, 0.9);\n}\n\n.disable {\n  pointer-events: none;\n}\n\n.invalid {\n  cursor: not-allowed;\n}\n\n.attack:hover {\n  border: 3px solid yellow;\n}\n\n.recent-attack {\n  border: 3px solid yellow;\n}\n\n.hidden {\n  visibility: hidden;\n}\n\n.next-turn {\n  animation-name: pop;\n  animation-duration: 800ms;\n}\n\n.winner {\n  animation-name: pulse;\n  animation-duration: 1400ms;\n  animation-iteration-count: infinite;\n}\n\n.ship-status {\n  height: 10vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  font-size: 1.5em;\n}\n\n@keyframes pop {\n  0% {\n    opacity: 0;\n    transform: scale(1, 1);\n  }\n\n  50% {\n    opacity: 100%;\n    transform: scale(2.5, 2.5);\n  }\n\n  100% {\n    transform: scale(1, 1);\n  }\n}\n\n@keyframes pulse {\n  0% {\n    transform: scale(1, 1);\n  }\n\n  50% {\n    opacity: 100%;\n    transform: scale(2, 2);\n  }\n\n  100% {\n    transform: scale(1, 1);\n  }\n}\n\nbutton {\n  text-align: center;\n  text-decoration: none;\n  background: white;\n  border: solid 1px black;\n  font-size: 1.2em;\n  padding: 0.4em;\n  border-radius: 0.2em;\n  margin: 1em;\n}\n\nbutton:hover {\n  background: lightgray;\n}\n\nbutton:active {\n  background: gray;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

@@ -4,6 +4,7 @@ html {
   font-family: "Lato", sans-serif;
 }
 
+/* Main container */
 #container {
   display: flex;
   flex-direction: column;
@@ -19,6 +20,7 @@ html {
   font-family: "Orbitron", sans-serif;
 }
 
+/* Container for gameboards status bars and ship status */
 #content {
   display: flex;
   justify-content: space-around;
@@ -127,7 +129,6 @@ html {
   }
 
   100% {
-    /* opacity: 100%; */
     transform: scale(1, 1);
   }
 }
